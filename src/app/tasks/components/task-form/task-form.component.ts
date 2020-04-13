@@ -5,17 +5,17 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 
 import { TaskModel } from './../../models/task.model';
-import { TaskArrayService } from './../../services/task-array.service';
+import { TaskPromiseService } from './../../services';
 
 @Component({
   templateUrl: './task-form.component.html',
-  styleUrls: ['./task-form.component.css']
+  styleUrls: ['./task-form.component.css'],
 })
 export class TaskFormComponent implements OnInit {
   task: TaskModel;
 
   constructor(
-    private taskArrayService: TaskArrayService,
+    private taskPromiseService: TaskPromiseService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -27,13 +27,16 @@ export class TaskFormComponent implements OnInit {
     // when router destroys this component, it handles subscriptions automatically
     const observer = {
       next: (task: TaskModel) => (this.task = { ...task }),
-      error: (err: any) => console.log(err)
+      error: (err: any) => console.log(err),
     };
     this.route.paramMap
       .pipe(
-        switchMap((params: ParamMap) =>
-          this.taskArrayService.getTask(+params.get('taskID'))
-        )
+        switchMap((params: ParamMap) => {
+          return params.get('taskID')
+            ? this.taskPromiseService.getTask(+params.get('taskID'))
+            : // when Promise.resolve(null) => task = null => {...null} => {}
+              Promise.resolve(null);
+        })
       )
       .subscribe(observer);
   }
@@ -41,13 +44,10 @@ export class TaskFormComponent implements OnInit {
   onSaveTask() {
     const task = { ...this.task } as TaskModel;
 
-    if (task.id) {
-      this.taskArrayService.updateTask(task);
-    } else {
-      this.taskArrayService.createTask(task);
-    }
-
-    this.onGoBack();
+    const method = task.id ? 'updateTask' : 'createTask';
+    this.taskPromiseService[method](task)
+      .then(() => this.onGoBack())
+      .catch(err => console.log(err));
   }
 
   onGoBack(): void {

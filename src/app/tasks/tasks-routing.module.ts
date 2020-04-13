@@ -7,12 +7,12 @@ import { TaskListComponent, TaskFormComponent } from './components';
 const metaTags: Array<MetaDefinition> = [
   {
     name: 'description',
-    content: 'Task Manager Application. This is an ASP application'
+    content: 'Task Manager Application. This is an ASP application',
   },
   {
     name: 'keywords',
-    content: 'Angular tutorial, SPA Application, Routing'
-  }
+    content: 'Angular tutorial, SPA Application, Routing',
+  },
 ];
 
 const routes: Routes = [
@@ -21,17 +21,21 @@ const routes: Routes = [
     component: TaskListComponent,
     data: {
       title: 'Task Manager',
-      meta: metaTags
-    }
+      meta: metaTags,
+    },
+  },
+  {
+    path: 'add',
+    component: TaskFormComponent,
   },
   {
     path: 'edit/:taskID',
-    component: TaskFormComponent
-  }
+    component: TaskFormComponent,
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class TasksRoutingModule {}
